@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h4 class="fw-bold" style="color:#1F4E79;">Tableau de bord</h4>
+        <p class="text-muted">Bienvenue, {{ current_user.nom }} — Plateforme SinistrAI</p>
+        <div class="alert alert-success">
+            ✅ Connexion réussie. Les fonctionnalités arrivent progressivement.
+        </div>
+    </div>
+</div>
+{% endblock %}

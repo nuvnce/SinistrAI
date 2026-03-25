@@ -1,0 +1,27 @@
+# Environnement virtuel
+.venv/
+venv/
+
+# Base de données
+*.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Fichiers uploadés
+app/static/uploads/
+
+# IDE
+.idea/
+.vscode/
+
+# Variables d'environnement
+.env
+
+# OS
+.DS_Store
+Thumbs.db
