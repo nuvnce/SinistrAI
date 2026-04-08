@@ -1,3 +1,8 @@
+from werkzeug.utils import secure_filename
+from app.models import Dossier, Document
+from app.services.ocr_service import analyser_document
+import json
+import os
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app import db
@@ -8,6 +13,7 @@ import string
 
 bp = Blueprint('dossiers', __name__)
 
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 
 def generer_reference():
     """Génère une référence unique de dossier."""
@@ -80,3 +86,51 @@ def supprimer(id):
     db.session.commit()
     flash(f'Dossier {dossier.reference} supprimé.', 'warning')
     return redirect(url_for('dossiers.index'))
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Ajoutez ces deux routes à la fin du fichier
+
+@bp.route('/dossiers/<int:id>/upload', methods=['POST'])
+@login_required
+def upload_document(id):
+    dossier = Dossier.query.get_or_404(id)
+
+    if 'fichier' not in request.files:
+        flash('Aucun fichier sélectionné.', 'danger')
+        return redirect(url_for('dossiers.detail', id=id))
+
+    fichier = request.files['fichier']
+
+    if fichier.filename == '' or not allowed_file(fichier.filename):
+        flash('Fichier invalide. Formats acceptés : PDF, PNG, JPG.', 'danger')
+        return redirect(url_for('dossiers.detail', id=id))
+
+    # Sauvegarde du fichier
+    from flask import current_app
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    os.makedirs(upload_folder, exist_ok=True)
+    filename = secure_filename(fichier.filename)
+    chemin = os.path.join(upload_folder, filename)
+    fichier.save(chemin)
+
+    # Analyse OCR
+    flash('⏳ Analyse OCR en cours...', 'info')
+    resultat = analyser_document(chemin)
+
+    # Sauvegarde en base
+    doc = Document(
+        dossier_id=dossier.id,
+        chemin_fichier=chemin,
+        ocr_data=json.dumps(resultat["champs"], ensure_ascii=False)
+    )
+    db.session.add(doc)
+    db.session.commit()
+
+    if resultat["succes"]:
+        flash('✅ Document analysé avec succès.', 'success')
+    else:
+        flash(f'⚠️ OCR partiel : {resultat.get("erreur", "erreur inconnue")}', 'warning')
+
+    return redirect(url_for('dossiers.detail', id=id))

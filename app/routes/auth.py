@@ -7,7 +7,7 @@ import bcrypt
 bp = Blueprint('auth', __name__)
 
 
-@bp.route('/')
+@bp.route('/', methods=['GET', 'POST'])
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':

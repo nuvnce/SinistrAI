@@ -18,4 +18,7 @@ def create_app():
     app.register_blueprint(auth.bp)
     app.register_blueprint(dossiers.bp)
 
+    import json
+    app.jinja_env.filters['fromjson'] = json.loads
+
     return app

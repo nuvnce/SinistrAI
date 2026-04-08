@@ -56,15 +56,62 @@
     </div>
 
     <!-- Documents (placeholder pour objectif 5) -->
+    <!-- Documents -->
     <div class="card shadow-sm border-0 mb-4">
       <div class="card-body p-4">
         <h6 class="fw-bold mb-3" style="color:#1F4E79;">📎 Documents</h6>
-        <p class="text-muted">
-          L'import de documents sera disponible à la prochaine étape.
-        </p>
+
+        <!-- Formulaire upload -->
+        <form method="POST" action="{{ url_for('dossiers.upload_document', id=dossier.id) }}"
+              enctype="multipart/form-data" class="mb-4">
+          <div class="input-group">
+            <input type="file" name="fichier" class="form-control"
+                   accept=".pdf,.png,.jpg,.jpeg" required>
+            <button type="submit" class="btn text-white"
+                    style="background-color:#2E75B6;">
+              Analyser
+            </button>
+          </div>
+          <small class="text-muted">Formats acceptés : PDF, PNG, JPG</small>
+        </form>
+
+        <!-- Liste des documents uploadés -->
+        {% if dossier.documents %}
+          {% for doc in dossier.documents %}
+            {% set ocr = doc.ocr_data | tojson | safe %}
+            {% set data = doc.ocr_data %}
+            <div class="card border mb-3">
+              <div class="card-body p-3">
+                <p class="fw-bold mb-2">
+                  📄 {{ doc.chemin_fichier.split('\\')[-1] }}
+                </p>
+                {% if doc.ocr_data %}
+                  {% set champs = doc.ocr_data | fromjson %}
+                  <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                      <td class="text-muted" style="width:140px;">Montant détecté</td>
+                      <td class="fw-bold">
+                        {{ champs.montant if champs.montant else '—' }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Date détectée</td>
+                      <td>{{ champs.date if champs.date else '—' }}</td>
+                    </tr>
+                    <tr>
+                      <td class="text-muted">Bénéficiaire</td>
+                      <td>{{ champs.beneficiaire if champs.beneficiaire else '—' }}</td>
+                    </tr>
+                  </table>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-muted">Aucun document importé.</p>
+        {% endif %}
       </div>
     </div>
-  </div>
 
   <!-- Actions -->
   <div class="col-md-4">
