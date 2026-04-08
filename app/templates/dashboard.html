@@ -1,13 +1,105 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h4 class="fw-bold" style="color:#1F4E79;">Tableau de bord</h4>
-        <p class="text-muted">Bienvenue, {{ current_user.nom }} — Plateforme SinistrAI</p>
-        <div class="alert alert-success">
-            ✅ Connexion réussie. Les fonctionnalités arrivent progressivement.
-        </div>
+
+<!-- Statistiques -->
+<div class="row mb-4">
+  <div class="col-12 d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold mb-0" style="color:#1F4E79;">📋 Tableau de bord</h4>
+    <a href="{{ url_for('dossiers.nouveau') }}" class="btn text-white"
+       style="background-color:#1F4E79;">+ Nouveau dossier</a>
+  </div>
+
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm border-0">
+      <div class="card-body">
+        <h2 class="fw-bold" style="color:#1F4E79;">{{ stats.total }}</h2>
+        <p class="text-muted mb-0">Total</p>
+      </div>
     </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm border-0">
+      <div class="card-body">
+        <h2 class="fw-bold text-warning">{{ stats.en_attente }}</h2>
+        <p class="text-muted mb-0">En attente</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm border-0">
+      <div class="card-body">
+        <h2 class="fw-bold text-success">{{ stats.valide }}</h2>
+        <p class="text-muted mb-0">Validés</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center shadow-sm border-0">
+      <div class="card-body">
+        <h2 class="fw-bold text-danger">{{ stats.anomalie }}</h2>
+        <p class="text-muted mb-0">Anomalies</p>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Liste des dossiers -->
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <h5 class="fw-bold mb-3" style="color:#1F4E79;">Mes dossiers</h5>
+    {% if dossiers %}
+    <table class="table table-hover align-middle">
+      <thead style="background-color:#D6E4F0;">
+        <tr>
+          <th>Référence</th>
+          <th>Statut</th>
+          <th>Score anomalie</th>
+          <th>Date création</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in dossiers %}
+        <tr>
+          <td class="fw-bold">{{ d.reference }}</td>
+          <td>
+            {% if d.statut == 'VALIDE' %}
+              <span class="badge bg-success">{{ d.statut }}</span>
+            {% elif d.statut == 'ANOMALIE' %}
+              <span class="badge bg-danger">{{ d.statut }}</span>
+            {% elif d.statut == 'REJETE' %}
+              <span class="badge bg-secondary">{{ d.statut }}</span>
+            {% else %}
+              <span class="badge bg-warning text-dark">{{ d.statut }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if d.score_anomalie is not none %}
+              <span class="fw-bold {{ 'text-danger' if d.score_anomalie > 0.5 else 'text-success' }}">
+                {{ "%.2f"|format(d.score_anomalie) }}
+              </span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>{{ d.date_creation.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>
+            <a href="{{ url_for('dossiers.detail', id=d.id) }}"
+               class="btn btn-sm btn-outline-primary">Voir</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <p>Aucun dossier pour le moment.</p>
+      <a href="{{ url_for('dossiers.nouveau') }}" class="btn text-white"
+         style="background-color:#1F4E79;">Créer votre premier dossier</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
 {% endblock %}

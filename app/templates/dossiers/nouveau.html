@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-4" style="color:#1F4E79;">📁 Nouveau dossier</h5>
+        <p class="text-muted">
+          Un nouveau dossier sera créé avec une référence unique.
+          Vous pourrez ensuite y ajouter des documents et lancer l'analyse.
+        </p>
+        <form method="POST">
+          <button type="submit" class="btn text-white w-100 mt-3"
+                  style="background-color:#1F4E79;">
+            Créer le dossier
+          </button>
+        </form>
+        <a href="{{ url_for('dossiers.index') }}"
+           class="btn btn-outline-secondary w-100 mt-2">Annuler</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
