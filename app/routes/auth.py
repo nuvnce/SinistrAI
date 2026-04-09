@@ -3,6 +3,7 @@ from flask_login import login_user, logout_user, login_required
 from app import db
 from app.models import Utilisateur
 import bcrypt
+from app.services.logger import log_action
 
 bp = Blueprint('auth', __name__)
 
@@ -17,6 +18,7 @@ def login():
 
         if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash):
             login_user(user)
+            log_action("CONNEXION", f"Connexion réussie", user_id=user.id)
             return redirect(url_for('dossiers.index'))
         else:
             flash('Email ou mot de passe incorrect.', 'danger')
@@ -27,6 +29,8 @@ def login():
 @bp.route('/logout')
 @login_required
 def logout():
+    from flask_login import current_user
+    log_action("DECONNEXION", "Déconnexion", user_id=current_user.id)
     logout_user()
     return redirect(url_for('auth.login'))
 

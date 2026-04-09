@@ -11,6 +11,7 @@ import string
 import json
 import os
 from app.services.anomaly_detector import scorer_dossier
+from app.services.logger import log_action
 
 bp = Blueprint('dossiers', __name__)
 
@@ -119,6 +120,7 @@ def nouveau():
         )
         db.session.add(dossier)
         db.session.commit()
+        log_action("CREATION_DOSSIER", f"Dossier {dossier.reference} créé", user_id=current_user.id)
         flash(f'Dossier {dossier.reference} créé avec succès.', 'success')
         return redirect(url_for('dossiers.detail', id=dossier.id))
     return render_template('dossiers/nouveau.html')
@@ -141,6 +143,7 @@ def update_statut(id):
         dossier.statut           = nouveau_statut
         dossier.date_mise_a_jour = datetime.utcnow()
         db.session.commit()
+        log_action("MAJ_STATUT", f"Dossier #{id} → {nouveau_statut}", user_id=current_user.id)
         flash('Statut mis à jour avec succès.', 'success')
     else:
         flash('Statut invalide.', 'danger')
@@ -152,6 +155,7 @@ def update_statut(id):
 def supprimer(id):
     dossier = Dossier.query.get_or_404(id)
     ref     = dossier.reference
+    log_action("SUPPRESSION_DOSSIER", f"Dossier {ref} supprimé", user_id=current_user.id)
     db.session.delete(dossier)
     db.session.commit()
     flash(f'Dossier {ref} supprimé.', 'warning')
@@ -188,6 +192,7 @@ def upload_document(id):
     )
     db.session.add(doc)
     db.session.commit()
+    log_action("UPLOAD_DOCUMENT", f"Document uploadé sur dossier {dossier.reference}", user_id=current_user.id)
 
     if resultat["succes"]:
         flash('✅ Document analysé avec succès.', 'success')
@@ -224,6 +229,11 @@ def analyser(id):
     dossier.score_anomalie = score_if
     dossier.date_mise_a_jour = datetime.utcnow()
     db.session.commit()
+    log_action(
+        "ANALYSE_DOSSIER",
+        f"Dossier {dossier.reference} analysé — statut={resultat['statut']} score={round(score_if, 2)}",
+        user_id=current_user.id
+    )
 
     if resultat["regles_violees"]:
         flash(

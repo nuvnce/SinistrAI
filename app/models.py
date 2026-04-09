@@ -59,3 +59,15 @@ class ResultatAnalyse(db.Model):
 
     def __repr__(self):
         return f'<ResultatAnalyse dossier={self.dossier_id}>'
+
+class Log(db.Model):
+    __tablename__ = 'logs'
+    id          = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=True)
+    action      = db.Column(db.String(100), nullable=False)
+    details     = db.Column(db.Text, nullable=True)
+    ip_address  = db.Column(db.String(45), nullable=True)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Log {self.action} — user={self.user_id}>'
