@@ -35,19 +35,3 @@ def logout():
     return redirect(url_for('auth.login'))
 
 
-@bp.route('/init-admin')
-def init_admin():
-    """Route temporaire pour créer le compte admin de test."""
-    if Utilisateur.query.filter_by(email='admin@sinistrai.com').first():
-        return "Compte admin déjà existant."
-
-    password_hash = bcrypt.hashpw('admin123'.encode('utf-8'), bcrypt.gensalt())
-    admin = Utilisateur(
-        nom='Administrateur',
-        email='admin@sinistrai.com',
-        password_hash=password_hash,
-        role='admin'
-    )
-    db.session.add(admin)
-    db.session.commit()
-    return "✅ Compte admin créé : admin@sinistrai.com / admin123"
