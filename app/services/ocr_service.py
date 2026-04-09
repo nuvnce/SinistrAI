@@ -4,6 +4,7 @@ import json
 import os
 from pdf2image import convert_from_path
 from PIL import Image
+import numpy as np
 
 # Chemin Poppler
 POPPLER_PATH = r"D:\DANIEL ESSONANI\sinistrai\poppler-25.12.0\Library\bin"

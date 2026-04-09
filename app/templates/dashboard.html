@@ -2,61 +2,157 @@
 
 {% block content %}
 
-<!-- Statistiques -->
-<div class="row mb-4">
-  <div class="col-12 d-flex justify-content-between align-items-center mb-3">
-    <h4 class="fw-bold mb-0" style="color:#1F4E79;">📋 Tableau de bord</h4>
-    <a href="{{ url_for('dossiers.nouveau') }}" class="btn text-white"
-       style="background-color:#1F4E79;">+ Nouveau dossier</a>
-  </div>
+<!-- En-tête -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0" style="color:#1F4E79;">📋 Tableau de bord</h4>
+  <a href="{{ url_for('dossiers.nouveau') }}" class="btn text-white"
+     style="background-color:#1F4E79;">+ Nouveau dossier</a>
+</div>
 
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm border-0">
+<!-- Cartes statistiques -->
+<div class="row mb-4 g-3">
+  <div class="col-md-2">
+    <div class="card text-center shadow-sm border-0 h-100">
       <div class="card-body">
         <h2 class="fw-bold" style="color:#1F4E79;">{{ stats.total }}</h2>
-        <p class="text-muted mb-0">Total</p>
+        <p class="text-muted mb-0 small">Total</p>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm border-0">
+  <div class="col-md-2">
+    <div class="card text-center shadow-sm border-0 h-100">
       <div class="card-body">
         <h2 class="fw-bold text-warning">{{ stats.en_attente }}</h2>
-        <p class="text-muted mb-0">En attente</p>
+        <p class="text-muted mb-0 small">En attente</p>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm border-0">
+  <div class="col-md-2">
+    <div class="card text-center shadow-sm border-0 h-100">
       <div class="card-body">
         <h2 class="fw-bold text-success">{{ stats.valide }}</h2>
-        <p class="text-muted mb-0">Validés</p>
+        <p class="text-muted mb-0 small">Validés</p>
       </div>
     </div>
   </div>
-  <div class="col-md-3">
-    <div class="card text-center shadow-sm border-0">
+  <div class="col-md-2">
+    <div class="card text-center shadow-sm border-0 h-100">
       <div class="card-body">
         <h2 class="fw-bold text-danger">{{ stats.anomalie }}</h2>
-        <p class="text-muted mb-0">Anomalies</p>
+        <p class="text-muted mb-0 small">Anomalies</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h2 class="fw-bold text-secondary">{{ stats.rejete }}</h2>
+        <p class="text-muted mb-0 small">Rejetés</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-2">
+    <div class="card text-center shadow-sm border-0 h-100"
+         style="background-color:#1F4E79;">
+      <div class="card-body">
+        <h2 class="fw-bold text-white">{{ stats.taux_anomalie }}%</h2>
+        <p class="text-white mb-0 small opacity-75">Taux anomalies</p>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Graphiques -->
+<div class="row mb-4 g-3">
+
+  <!-- Répartition des statuts -->
+  <div class="col-md-4">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3" style="color:#1F4E79;">Répartition des statuts</h6>
+        <canvas id="chartStatuts" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Évolution mensuelle -->
+  <div class="col-md-8">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3" style="color:#1F4E79;">Évolution mensuelle des dossiers</h6>
+        <canvas id="chartEvolution" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="row mb-4 g-3">
+
+  <!-- Scores d'anomalie -->
+  <div class="col-md-7">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3" style="color:#1F4E79;">
+          Scores d'anomalie — 10 derniers dossiers analysés
+        </h6>
+        {% if scores_data %}
+          <canvas id="chartScores" height="120"></canvas>
+        {% else %}
+          <p class="text-muted">Aucun dossier analysé pour le moment.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance OCR -->
+  <div class="col-md-5">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h6 class="fw-bold mb-3" style="color:#1F4E79;">
+          Performance OCR
+          <span class="text-muted fw-normal small">({{ perf_ocr.nb_docs }} doc(s))</span>
+        </h6>
+        {% if perf_ocr.nb_docs > 0 %}
+          <p class="mb-1 small">Montant détecté</p>
+          <div class="progress mb-3" style="height:12px;">
+            <div class="progress-bar bg-success" style="width:{{ perf_ocr.montant }}%"></div>
+          </div>
+          <p class="text-end small text-muted mt-n2">{{ perf_ocr.montant }}%</p>
+
+          <p class="mb-1 small">Date détectée</p>
+          <div class="progress mb-3" style="height:12px;">
+            <div class="progress-bar bg-warning" style="width:{{ perf_ocr.date }}%"></div>
+          </div>
+          <p class="text-end small text-muted mt-n2">{{ perf_ocr.date }}%</p>
+
+          <p class="mb-1 small">Bénéficiaire détecté</p>
+          <div class="progress mb-3" style="height:12px;">
+            <div class="progress-bar bg-info" style="width:{{ perf_ocr.beneficiaire }}%"></div>
+          </div>
+          <p class="text-end small text-muted mt-n2">{{ perf_ocr.beneficiaire }}%</p>
+        {% else %}
+          <p class="text-muted">Aucun document analysé.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <!-- Liste des dossiers -->
 <div class="card shadow-sm border-0">
   <div class="card-body">
-    <h5 class="fw-bold mb-3" style="color:#1F4E79;">Mes dossiers</h5>
+    <h6 class="fw-bold mb-3" style="color:#1F4E79;">Mes dossiers</h6>
     {% if dossiers %}
     <table class="table table-hover align-middle">
       <thead style="background-color:#D6E4F0;">
         <tr>
           <th>Référence</th>
           <th>Statut</th>
-          <th>Score anomalie</th>
+          <th>Score IF</th>
           <th>Date création</th>
-          <th>Actions</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
@@ -76,8 +172,9 @@
           </td>
           <td>
             {% if d.score_anomalie is not none %}
-              <span class="fw-bold {{ 'text-danger' if d.score_anomalie > 0.5 else 'text-success' }}">
-                {{ "%.2f"|format(d.score_anomalie) }}
+              {% set s = d.score_anomalie %}
+              <span class="fw-bold {{ 'text-danger' if s > 0.6 else 'text-warning' if s > 0.4 else 'text-success' }}">
+                {{ "%.2f"|format(s) }}
               </span>
             {% else %}
               <span class="text-muted">—</span>
@@ -101,5 +198,80 @@
     {% endif %}
   </div>
 </div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // ── Graphique répartition statuts ─────────────────────────────────────────
+  new Chart(document.getElementById('chartStatuts'), {
+    type: 'doughnut',
+    data: {
+      labels: ['En attente', 'Validés', 'Anomalies', 'Rejetés'],
+      datasets: [{
+        data: [
+          {{ stats.en_attente }},
+          {{ stats.valide }},
+          {{ stats.anomalie }},
+          {{ stats.rejete }}
+        ],
+        backgroundColor: ['#FFC107', '#28A745', '#DC3545', '#6C757D'],
+        borderWidth: 2,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+
+  // ── Graphique évolution mensuelle ─────────────────────────────────────────
+  new Chart(document.getElementById('chartEvolution'), {
+    type: 'bar',
+    data: {
+      labels: {{ evolution_labels | tojson }},
+      datasets: [{
+        label: 'Dossiers créés',
+        data: {{ evolution_data | tojson }},
+        backgroundColor: 'rgba(31, 78, 121, 0.7)',
+        borderColor: '#1F4E79',
+        borderWidth: 1,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+
+  // ── Graphique scores d'anomalie ───────────────────────────────────────────
+  {% if scores_data %}
+  new Chart(document.getElementById('chartScores'), {
+    type: 'bar',
+    data: {
+      labels: {{ scores_labels | tojson }},
+      datasets: [{
+        label: 'Score anomalie',
+        data: {{ scores_data | tojson }},
+        backgroundColor: {{ scores_data | tojson }}.map(s =>
+          s > 0.6 ? 'rgba(220,53,69,0.7)' :
+          s > 0.4 ? 'rgba(255,193,7,0.7)' :
+                    'rgba(40,167,69,0.7)'
+        ),
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, max: 1,
+             ticks: { callback: v => v.toFixed(1) } }
+      }
+    }
+  });
+  {% endif %}
+</script>
 
 {% endblock %}

@@ -40,12 +40,19 @@
             </td>
           </tr>
           <tr>
-            <td class="text-muted">Score anomalie</td>
+            <td class="text-muted">Score anomalie (IF)</td>
             <td>
               {% if dossier.score_anomalie is not none %}
-                <span class="fw-bold {{ 'text-danger' if dossier.score_anomalie > 0.5 else 'text-success' }}">
-                  {{ "%.2f"|format(dossier.score_anomalie) }}
-                </span>
+                {% set s = dossier.score_anomalie %}
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-grow-1" style="height:10px;">
+                    <div class="progress-bar {{ 'bg-danger' if s > 0.6 else 'bg-warning' if s > 0.4 else 'bg-success' }}"
+                         style="width:{{ (s * 100)|int }}%"></div>
+                  </div>
+                  <span class="fw-bold {{ 'text-danger' if s > 0.6 else 'text-warning' if s > 0.4 else 'text-success' }}">
+                    {{ "%.2f"|format(s) }}
+                  </span>
+                </div>
               {% else %}
                 <span class="text-muted">Non calculé</span>
               {% endif %}
