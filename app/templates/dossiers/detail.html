@@ -116,6 +116,40 @@
   <!-- Actions -->
   <div class="col-md-4">
 
+
+    <!-- Analyse des règles métiers -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3" style="color:#1F4E79;">🔍 Analyse métier</h6>
+        <form method="POST" action="{{ url_for('dossiers.analyser', id=dossier.id) }}">
+          <button type="submit" class="btn text-white w-100"
+                  style="background-color:#1F4E79;">
+            Lancer l'analyse
+          </button>
+        </form>
+
+        {% if dossier.resultats %}
+          {% set dernier = dossier.resultats[-1] %}
+          {% if dernier.regles_violees %}
+            {% set res = dernier.regles_violees | fromjson %}
+            <hr>
+            {% if res.regles_violees %}
+              <p class="text-danger fw-bold mb-2">
+                ⚠️ {{ res.nb_violations }} règle(s) violée(s)
+              </p>
+              {% for code, msg in res.details.items() %}
+                <div class="alert alert-danger p-2 mb-2" style="font-size:0.85rem;">
+                  <strong>{{ code }}</strong> — {{ msg }}
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-success fw-bold mt-3">✅ Aucune anomalie détectée</p>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
     <!-- Mise à jour statut -->
     <div class="card shadow-sm border-0 mb-4">
       <div class="card-body p-4">

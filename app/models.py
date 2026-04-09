@@ -30,8 +30,8 @@ class Dossier(db.Model):
     date_creation  = db.Column(db.DateTime, default=datetime.utcnow)
     date_mise_a_jour = db.Column(db.DateTime, onupdate=datetime.utcnow)
     created_by     = db.Column(db.Integer, db.ForeignKey('utilisateurs.id'), nullable=False)
-    documents      = db.relationship('Document', backref='dossier', lazy=True)
-    resultats      = db.relationship('ResultatAnalyse', backref='dossier', lazy=True)
+    documents = db.relationship('Document', backref='dossier', lazy=True, cascade='all, delete-orphan')
+    resultats = db.relationship('ResultatAnalyse', backref='dossier', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Dossier {self.reference}>'
