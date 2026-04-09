@@ -67,9 +67,23 @@ def extraire_champs(texte):
         r'septembre|octobre|novembre|décembre)\s+(\d{4})\b',
     ]
     mois_map = {
-        'janvier': '01', 'février': '02', 'mars': '03', 'avril': '04',
-        'mai': '05', 'juin': '06', 'juillet': '07', 'août': '08',
-        'septembre': '09', 'octobre': '10', 'novembre': '11', 'décembre': '12'
+        # Français
+        'janvier': '01', 'février': '02', 'fevrier': '02', 'mars': '03',
+        'avril': '04', 'mai': '05', 'juin': '06', 'juillet': '07',
+        'août': '08', 'aout': '08', 'septembre': '09', 'octobre': '10',
+        'novembre': '11', 'décembre': '12', 'decembre': '12',
+        # Anglais
+        'january': '01', 'february': '02', 'march': '03', 'april': '04',
+        'may': '05', 'june': '06', 'july': '07', 'august': '08',
+        'september': '09', 'october': '10', 'november': '11', 'december': '12',
+        # Abréviations françaises
+        'jan': '01', 'fév': '02', 'fev': '02', 'avr': '04',
+        'juil': '07', 'aoû': '08', 'aou': '08', 'sept': '09',
+        'oct': '10', 'nov': '11', 'déc': '12', 'dec': '12',
+        # Abréviations anglaises
+        'jan': '01', 'feb': '02', 'mar': '03', 'apr': '04',
+        'jun': '06', 'jul': '07', 'aug': '08', 'sep': '09',
+        'oct': '10', 'nov': '11', 'dec': '12',
     }
     for pattern in patterns_date:
         match = re.search(pattern, texte.lower())
