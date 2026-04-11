@@ -1,5 +1,195 @@
 {% extends 'base.html' %}
-{% block page_title %}Utilisateurs{% endblock %}
+{% block title %}Utilisateurs{% endblock %}
+{% block page_title %}Gestion des utilisateurs{% endblock %}
+
 {% block content %}
-<p class="text-secondary">Page en construction</p>
+
+<!-- En-tête -->
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
+  <div>
+    <h2 class="section-title">Utilisateurs</h2>
+    <p class="section-subtitle">{{ users|length }} compte(s) enregistré(s) sur la plateforme.</p>
+  </div>
+  <button onclick="document.getElementById('modalCreer').style.display='flex'" class="btn-primary-dark">
+    <i class="bi bi-person-plus"></i> Nouveau compte
+  </button>
+</div>
+
+<!-- Tableau des utilisateurs -->
+<div class="card-dark" style="padding:0; overflow:hidden; margin-bottom:20px;">
+  {% if users %}
+  <table class="table-dark-custom">
+    <thead>
+      <tr>
+        <th>Utilisateur</th>
+        <th>Email</th>
+        <th>Rôle</th>
+        <th>Membre depuis</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:36px; height:36px; background:linear-gradient(135deg,#2563EB,#1D4ED8); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:white; flex-shrink:0;">
+              {{ u.nom[0].upper() }}
+            </div>
+            <div>
+              <div style="font-size:14px; font-weight:600; color:var(--text-primary);">{{ u.nom }}</div>
+              {% if u.id == current_user.id %}
+                <div style="font-size:11px; color:var(--accent);">← Vous</div>
+              {% endif %}
+            </div>
+          </div>
+        </td>
+        <td style="color:var(--text-secondary); font-size:13px;">{{ u.email }}</td>
+        <td>
+          {% if u.role == 'admin' %}
+            <span class="badge-status" style="background:rgba(37,99,235,0.15); color:#3B82F6;">ADMIN</span>
+          {% else %}
+            <span class="badge-status badge-attente">GESTIONNAIRE</span>
+          {% endif %}
+        </td>
+        <td style="color:var(--text-secondary); font-size:13px;">
+          {{ u.date_creation.strftime('%d/%m/%Y') }}
+        </td>
+        <td style="text-align:right;">
+          <div style="display:flex; gap:8px; justify-content:flex-end;">
+            <button onclick="ouvrirModifier({{ u.id }}, '{{ u.nom }}', '{{ u.email }}', '{{ u.role }}')"
+                    class="btn-outline-dark" style="padding:6px 12px; font-size:12px;">
+              <i class="bi bi-pencil"></i>
+            </button>
+            {% if u.id != current_user.id %}
+            <form method="POST" action="{{ url_for('admin.supprimer_utilisateur', id=u.id) }}"
+                  onsubmit="return confirm('Supprimer le compte de {{ u.nom }} ?')">
+              <button type="submit" class="btn-danger-dark" style="padding:6px 12px; font-size:12px;">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="text-align:center; padding:60px 0; color:var(--text-muted);">
+    <i class="bi bi-people" style="font-size:48px; display:block; margin-bottom:16px;"></i>
+    <p style="font-size:15px;">Aucun utilisateur trouvé.</p>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Modal Créer un compte -->
+<div id="modalCreer" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:32px; width:100%; max-width:460px; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <h3 style="font-size:17px; font-weight:600; color:var(--text-primary);">
+        <i class="bi bi-person-plus me-2" style="color:var(--accent);"></i>Nouveau compte
+      </h3>
+      <button onclick="document.getElementById('modalCreer').style.display='none'"
+              style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:20px;">×</button>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin.creer_utilisateur') }}">
+      <div style="margin-bottom:16px;">
+        <label class="form-label-dark">Nom complet</label>
+        <input type="text" name="nom" class="form-control-dark" placeholder="Ex : Jean Dupont" required/>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label-dark">Adresse email</label>
+        <input type="email" name="email" class="form-control-dark" placeholder="jean@sinistrai.com" required/>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label-dark">Mot de passe</label>
+        <input type="password" name="password" class="form-control-dark" placeholder="Minimum 6 caractères" required/>
+      </div>
+      <div style="margin-bottom:24px;">
+        <label class="form-label-dark">Rôle</label>
+        <select name="role" class="form-select-dark">
+          <option value="gestionnaire">Gestionnaire</option>
+          <option value="admin">Administrateur</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button type="submit" class="btn-primary-dark" style="flex:1; justify-content:center;">
+          <i class="bi bi-check-lg"></i> Créer le compte
+        </button>
+        <button type="button" onclick="document.getElementById('modalCreer').style.display='none'"
+                class="btn-outline-dark" style="flex:1; justify-content:center;">
+          Annuler
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Modifier un compte -->
+<div id="modalModifier" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:32px; width:100%; max-width:460px; box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <h3 style="font-size:17px; font-weight:600; color:var(--text-primary);">
+        <i class="bi bi-pencil me-2" style="color:var(--accent);"></i>Modifier le compte
+      </h3>
+      <button onclick="document.getElementById('modalModifier').style.display='none'"
+              style="background:none; border:none; color:var(--text-secondary); cursor:pointer; font-size:20px;">×</button>
+    </div>
+
+    <form method="POST" id="formModifier" action="">
+      <input type="hidden" name="user_id" id="modifierId"/>
+      <div style="margin-bottom:16px;">
+        <label class="form-label-dark">Nom complet</label>
+        <input type="text" name="nom" id="modifierNom" class="form-control-dark" required/>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label-dark">Adresse email</label>
+        <input type="email" name="email" id="modifierEmail" class="form-control-dark" required/>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="form-label-dark">Nouveau mot de passe <span style="color:var(--text-muted); font-weight:400;">(laisser vide pour ne pas changer)</span></label>
+        <input type="password" name="password" class="form-control-dark" placeholder="Laisser vide pour conserver l'actuel"/>
+      </div>
+      <div style="margin-bottom:24px;">
+        <label class="form-label-dark">Rôle</label>
+        <select name="role" id="modifierRole" class="form-select-dark">
+          <option value="gestionnaire">Gestionnaire</option>
+          <option value="admin">Administrateur</option>
+        </select>
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button type="submit" class="btn-primary-dark" style="flex:1; justify-content:center;">
+          <i class="bi bi-check-lg"></i> Enregistrer
+        </button>
+        <button type="button" onclick="document.getElementById('modalModifier').style.display='none'"
+                class="btn-outline-dark" style="flex:1; justify-content:center;">
+          Annuler
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  function ouvrirModifier(id, nom, email, role) {
+    document.getElementById('modifierId').value    = id;
+    document.getElementById('modifierNom').value   = nom;
+    document.getElementById('modifierEmail').value = email;
+    document.getElementById('modifierRole').value  = role;
+    document.getElementById('formModifier').action = '/admin/utilisateurs/' + id + '/modifier';
+    document.getElementById('modalModifier').style.display = 'flex';
+  }
+
+  // Fermer modal en cliquant dehors
+  ['modalCreer', 'modalModifier'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) {
+      if (e.target === this) this.style.display = 'none';
+    });
+  });
+</script>
+{% endblock %}
+
 {% endblock %}
