@@ -1,25 +1,83 @@
 {% extends 'base.html' %}
+{% block title %}Nouveau dossier{% endblock %}
+{% block page_title %}Nouveau dossier{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card shadow-sm border-0">
-      <div class="card-body p-4">
-        <h5 class="fw-bold mb-4" style="color:#1F4E79;">📁 Nouveau dossier</h5>
-        <p class="text-muted">
-          Un nouveau dossier sera créé avec une référence unique.
-          Vous pourrez ensuite y ajouter des documents et lancer l'analyse.
+
+<div style="max-width:560px; margin:0 auto;">
+
+  <!-- Fil d'ariane -->
+  <div style="display:flex; align-items:center; gap:8px; margin-bottom:28px; font-size:13px; color:var(--text-muted);">
+    <a href="{{ url_for('dossiers.liste') }}" style="color:var(--text-secondary); text-decoration:none;">
+      <i class="bi bi-folder2-open me-1"></i>Dossiers
+    </a>
+    <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+    <span style="color:var(--text-primary);">Nouveau dossier</span>
+  </div>
+
+  <div class="card-dark">
+
+    <!-- En-tête -->
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid var(--border);">
+      <div style="width:48px; height:48px; background:rgba(37,99,235,0.12); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px;">
+        📁
+      </div>
+      <div>
+        <h2 style="font-size:17px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">
+          Créer un nouveau dossier
+        </h2>
+        <p style="font-size:13px; color:var(--text-secondary);">
+          Une référence unique sera générée automatiquement.
         </p>
-        <form method="POST">
-          <button type="submit" class="btn text-white w-100 mt-3"
-                  style="background-color:#1F4E79;">
-            Créer le dossier
-          </button>
-        </form>
-        <a href="{{ url_for('dossiers.index') }}"
-           class="btn btn-outline-secondary w-100 mt-2">Annuler</a>
       </div>
     </div>
+
+    <!-- Info -->
+    <div style="background:rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.2); border-radius:10px; padding:16px; margin-bottom:28px; display:flex; gap:12px;">
+      <i class="bi bi-info-circle" style="color:var(--accent); font-size:18px; flex-shrink:0; margin-top:1px;"></i>
+      <div>
+        <p style="font-size:13px; color:var(--text-primary); font-weight:500; margin-bottom:4px;">Comment ça fonctionne ?</p>
+        <p style="font-size:13px; color:var(--text-secondary);">
+          Après création, vous pourrez importer des documents (PDF, image), lancer l'extraction OCR,
+          appliquer les règles métiers et obtenir un score d'anomalie par Machine Learning.
+        </p>
+      </div>
+    </div>
+
+    <!-- Formulaire -->
+    <form method="POST" action="{{ url_for('dossiers.nouveau') }}">
+      <div style="margin-bottom:20px;">
+        <label class="form-label-dark">Référence</label>
+        <input type="text" class="form-control-dark" value="Générée automatiquement" disabled
+               style="opacity:0.5; cursor:not-allowed;"/>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:6px;">
+          Format : SIN-AAAA-XXXXXX
+        </p>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <label class="form-label-dark">Statut initial</label>
+        <input type="text" class="form-control-dark" value="EN ATTENTE" disabled
+               style="opacity:0.5; cursor:not-allowed;"/>
+      </div>
+
+      <div style="margin-bottom:28px;">
+        <label class="form-label-dark">Créé par</label>
+        <input type="text" class="form-control-dark" value="{{ current_user.nom }}" disabled
+               style="opacity:0.5; cursor:not-allowed;"/>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button type="submit" class="btn-primary-dark" style="flex:1; justify-content:center;">
+          <i class="bi bi-plus-lg"></i> Créer le dossier
+        </button>
+        <a href="{{ url_for('dossiers.liste') }}" class="btn-outline-dark" style="flex:1; justify-content:center;">
+          <i class="bi bi-x-lg"></i> Annuler
+        </a>
+      </div>
+    </form>
+
   </div>
 </div>
+
 {% endblock %}

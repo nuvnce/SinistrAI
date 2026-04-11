@@ -1,5 +1,148 @@
 {% extends 'base.html' %}
+{% block title %}Dossiers{% endblock %}
 {% block page_title %}Dossiers{% endblock %}
+
 {% block content %}
-<p class="text-secondary">Page en construction</p>
+
+<!-- En-tête -->
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;">
+  <div>
+    <h2 class="section-title">Dossiers de sinistres</h2>
+    <p class="section-subtitle">{{ stats.total }} dossier(s) au total</p>
+  </div>
+  <a href="{{ url_for('dossiers.nouveau') }}" class="btn-primary-dark">
+    <i class="bi bi-plus-lg"></i> Nouveau dossier
+  </a>
+</div>
+
+<!-- Filtres rapides -->
+<div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+  <button onclick="filtrer('tous')" id="btn-tous"
+          class="btn-outline-dark" style="border-color:var(--accent); color:var(--accent);">
+    Tous <span style="background:var(--accent); color:white; border-radius:20px; padding:1px 8px; font-size:11px; margin-left:4px;">{{ stats.total }}</span>
+  </button>
+  <button onclick="filtrer('EN_ATTENTE')" id="btn-EN_ATTENTE" class="btn-outline-dark">
+    En attente <span style="background:var(--warning); color:white; border-radius:20px; padding:1px 8px; font-size:11px; margin-left:4px;">{{ stats.en_attente }}</span>
+  </button>
+  <button onclick="filtrer('VALIDE')" id="btn-VALIDE" class="btn-outline-dark">
+    Validés <span style="background:var(--success); color:white; border-radius:20px; padding:1px 8px; font-size:11px; margin-left:4px;">{{ stats.valide }}</span>
+  </button>
+  <button onclick="filtrer('ANOMALIE')" id="btn-ANOMALIE" class="btn-outline-dark">
+    Anomalies <span style="background:var(--danger); color:white; border-radius:20px; padding:1px 8px; font-size:11px; margin-left:4px;">{{ stats.anomalie }}</span>
+  </button>
+</div>
+
+<!-- Tableau -->
+<div class="card-dark" style="padding:0; overflow:hidden;">
+  {% if dossiers %}
+  <table class="table-dark-custom" id="tableDossiers">
+    <thead>
+      <tr>
+        <th>Référence</th>
+        <th>Statut</th>
+        <th>Score IF</th>
+        <th>Documents</th>
+        <th>Créé le</th>
+        <th>Dernière MAJ</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in dossiers %}
+      <tr data-statut="{{ d.statut }}">
+        <td>
+          <span style="font-weight:600; font-family:monospace; font-size:13px;">
+            {{ d.reference }}
+          </span>
+        </td>
+        <td>
+          {% if d.statut == 'VALIDE' %}
+            <span class="badge-status badge-valide">VALIDE</span>
+          {% elif d.statut == 'ANOMALIE' %}
+            <span class="badge-status badge-anomalie">ANOMALIE</span>
+          {% elif d.statut == 'REJETE' %}
+            <span class="badge-status badge-rejete">REJETÉ</span>
+          {% else %}
+            <span class="badge-status badge-attente">EN ATTENTE</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if d.score_anomalie is not none %}
+            {% set s = d.score_anomalie %}
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:60px; height:6px; background:var(--border); border-radius:3px; overflow:hidden;">
+                <div style="height:100%; width:{{ (s * 100)|int }}%; background:{{ '#EF4444' if s > 0.6 else '#F59E0B' if s > 0.4 else '#10B981' }}; border-radius:3px;"></div>
+              </div>
+              <span style="font-size:13px; font-weight:600; color:{{ '#EF4444' if s > 0.6 else '#F59E0B' if s > 0.4 else '#10B981' }};">
+                {{ "%.2f"|format(s) }}
+              </span>
+            </div>
+          {% else %}
+            <span style="color:var(--text-muted); font-size:13px;">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <span style="color:var(--text-secondary); font-size:13px;">
+            <i class="bi bi-paperclip"></i> {{ d.documents|length }}
+          </span>
+        </td>
+        <td style="color:var(--text-secondary); font-size:13px;">
+          {{ d.date_creation.strftime('%d/%m/%Y') }}
+        </td>
+        <td style="color:var(--text-secondary); font-size:13px;">
+          {% if d.date_mise_a_jour %}
+            {{ d.date_mise_a_jour.strftime('%d/%m/%Y') }}
+          {% else %}—{% endif %}
+        </td>
+        <td style="text-align:right;">
+          <a href="{{ url_for('dossiers.detail', id=d.id) }}" class="btn-outline-dark" style="padding:6px 12px; font-size:12px;">
+            <i class="bi bi-eye"></i> Voir
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="text-align:center; padding:60px 0; color:var(--text-muted);">
+    <i class="bi bi-folder-x" style="font-size:48px; display:block; margin-bottom:16px;"></i>
+    <p style="font-size:15px; margin-bottom:20px;">Aucun dossier pour le moment.</p>
+    <a href="{{ url_for('dossiers.nouveau') }}" class="btn-primary-dark">
+      <i class="bi bi-plus-lg"></i> Créer votre premier dossier
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+  function filtrer(statut) {
+    const rows    = document.querySelectorAll('#tableDossiers tbody tr');
+    const buttons = document.querySelectorAll('[id^="btn-"]');
+
+    // Reset styles boutons
+    buttons.forEach(b => {
+      b.style.borderColor = '';
+      b.style.color       = '';
+    });
+
+    // Activer bouton sélectionné
+    const active = document.getElementById('btn-' + statut);
+    if (active) {
+      active.style.borderColor = 'var(--accent)';
+      active.style.color       = 'var(--accent)';
+    }
+
+    // Filtrer les lignes
+    rows.forEach(row => {
+      if (statut === 'tous' || row.dataset.statut === statut) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+</script>
+{% endblock %}
+
 {% endblock %}

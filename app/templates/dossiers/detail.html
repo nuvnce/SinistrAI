@@ -1,196 +1,229 @@
 {% extends 'base.html' %}
+{% block title %}{{ dossier.reference }}{% endblock %}
+{% block page_title %}Détail du dossier{% endblock %}
 
 {% block content %}
-<div class="row">
 
-  <!-- Infos dossier -->
-  <div class="col-md-8">
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-body p-4">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold mb-0" style="color:#1F4E79;">
-            📁 {{ dossier.reference }}
-          </h5>
-          {% if dossier.statut == 'VALIDE' %}
-            <span class="badge bg-success fs-6">{{ dossier.statut }}</span>
-          {% elif dossier.statut == 'ANOMALIE' %}
-            <span class="badge bg-danger fs-6">{{ dossier.statut }}</span>
-          {% elif dossier.statut == 'REJETE' %}
-            <span class="badge bg-secondary fs-6">{{ dossier.statut }}</span>
+<!-- Fil d'ariane -->
+<div style="display:flex; align-items:center; gap:8px; margin-bottom:24px; font-size:13px; color:var(--text-muted);">
+  <a href="{{ url_for('dossiers.liste') }}" style="color:var(--text-secondary); text-decoration:none;">
+    <i class="bi bi-folder2-open me-1"></i>Dossiers
+  </a>
+  <i class="bi bi-chevron-right" style="font-size:10px;"></i>
+  <span style="color:var(--text-primary); font-family:monospace;">{{ dossier.reference }}</span>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 320px; gap:20px; align-items:start;">
+
+  <!-- ── Colonne gauche ── -->
+  <div style="display:flex; flex-direction:column; gap:20px;">
+
+    <!-- Infos générales -->
+    <div class="card-dark">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border);">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:42px; height:42px; background:rgba(37,99,235,0.12); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px;">📁</div>
+          <div>
+            <div style="font-size:16px; font-weight:700; color:var(--text-primary); font-family:monospace;">{{ dossier.reference }}</div>
+            <div style="font-size:12px; color:var(--text-muted);">Créé par {{ dossier.createur.nom }}</div>
+          </div>
+        </div>
+        {% if dossier.statut == 'VALIDE' %}<span class="badge-status badge-valide">VALIDE</span>
+        {% elif dossier.statut == 'ANOMALIE' %}<span class="badge-status badge-anomalie">ANOMALIE</span>
+        {% elif dossier.statut == 'REJETE' %}<span class="badge-status badge-rejete">REJETÉ</span>
+        {% else %}<span class="badge-status badge-attente">EN ATTENTE</span>{% endif %}
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Date de création</div>
+          <div style="font-size:14px; color:var(--text-primary);">{{ dossier.date_creation.strftime('%d/%m/%Y à %H:%M') }}</div>
+        </div>
+        <div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Dernière mise à jour</div>
+          <div style="font-size:14px; color:var(--text-primary);">
+            {% if dossier.date_mise_a_jour %}{{ dossier.date_mise_a_jour.strftime('%d/%m/%Y à %H:%M') }}{% else %}—{% endif %}
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Score anomalie (IF)</div>
+          {% if dossier.score_anomalie is not none %}
+            {% set s = dossier.score_anomalie %}
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="flex:1; height:8px; background:var(--border); border-radius:4px; overflow:hidden;">
+                <div style="height:100%; width:{{ (s*100)|int }}%; background:{{ '#EF4444' if s > 0.6 else '#F59E0B' if s > 0.4 else '#10B981' }}; border-radius:4px; transition:width 1s ease;"></div>
+              </div>
+              <span style="font-size:14px; font-weight:700; color:{{ '#EF4444' if s > 0.6 else '#F59E0B' if s > 0.4 else '#10B981' }};">{{ "%.2f"|format(s) }}</span>
+            </div>
           {% else %}
-            <span class="badge bg-warning text-dark fs-6">{{ dossier.statut }}</span>
+            <div style="font-size:14px; color:var(--text-muted);">Non calculé</div>
           {% endif %}
         </div>
-
-        <table class="table table-borderless">
-          <tr>
-            <td class="text-muted">Créé par</td>
-            <td class="fw-bold">{{ dossier.createur.nom }}</td>
-          </tr>
-          <tr>
-            <td class="text-muted">Date de création</td>
-            <td>{{ dossier.date_creation.strftime('%d/%m/%Y à %H:%M') }}</td>
-          </tr>
-          <tr>
-            <td class="text-muted">Dernière mise à jour</td>
-            <td>
-              {% if dossier.date_mise_a_jour %}
-                {{ dossier.date_mise_a_jour.strftime('%d/%m/%Y à %H:%M') }}
-              {% else %}—{% endif %}
-            </td>
-          </tr>
-          <tr>
-            <td class="text-muted">Score anomalie (IF)</td>
-            <td>
-              {% if dossier.score_anomalie is not none %}
-                {% set s = dossier.score_anomalie %}
-                <div class="d-flex align-items-center gap-2">
-                  <div class="progress flex-grow-1" style="height:10px;">
-                    <div class="progress-bar {{ 'bg-danger' if s > 0.6 else 'bg-warning' if s > 0.4 else 'bg-success' }}"
-                         style="width:{{ (s * 100)|int }}%"></div>
-                  </div>
-                  <span class="fw-bold {{ 'text-danger' if s > 0.6 else 'text-warning' if s > 0.4 else 'text-success' }}">
-                    {{ "%.2f"|format(s) }}
-                  </span>
-                </div>
-              {% else %}
-                <span class="text-muted">Non calculé</span>
-              {% endif %}
-            </td>
-          </tr>
-        </table>
+        <div>
+          <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Documents</div>
+          <div style="font-size:14px; color:var(--text-primary);">
+            <i class="bi bi-paperclip"></i> {{ dossier.documents|length }} fichier(s)
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Documents (placeholder pour objectif 5) -->
-    <!-- Documents -->
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-body p-4">
-        <h6 class="fw-bold mb-3" style="color:#1F4E79;">📎 Documents</h6>
+    <!-- Documents & OCR -->
+    <div class="card-dark">
+      <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:16px;">
+        <i class="bi bi-paperclip me-2" style="color:var(--accent);"></i>Documents & OCR
+      </h3>
 
-        <!-- Formulaire upload -->
-        <form method="POST" action="{{ url_for('dossiers.upload_document', id=dossier.id) }}"
-              enctype="multipart/form-data" class="mb-4">
-          <div class="input-group">
-            <input type="file" name="fichier" class="form-control"
-                   accept=".pdf,.png,.jpg,.jpeg" required>
-            <button type="submit" class="btn text-white"
-                    style="background-color:#2E75B6;">
-              Analyser
-            </button>
+      <!-- Upload avec spinner -->
+      <form method="POST" action="{{ url_for('dossiers.upload_document', id=dossier.id) }}"
+            enctype="multipart/form-data" data-spinner style="margin-bottom:20px;">
+        <div style="display:flex; gap:10px;">
+          <input type="file" name="fichier" accept=".pdf,.png,.jpg,.jpeg" required
+                 class="form-control-dark" style="flex:1;"/>
+          <button type="submit" class="btn-primary-dark" style="white-space:nowrap;">
+            <i class="bi bi-upload"></i> Analyser
+          </button>
+        </div>
+        <p style="font-size:12px; color:var(--text-muted); margin-top:6px;">
+          Formats acceptés : PDF, PNG, JPG — Max 16MB
+        </p>
+      </form>
+
+      <!-- Liste des documents -->
+      {% if dossier.documents %}
+        {% for doc in dossier.documents %}
+        <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; padding:16px; margin-bottom:12px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <i class="bi bi-file-earmark-text" style="font-size:20px; color:var(--accent);"></i>
+            <span style="font-size:13px; font-weight:600; color:var(--text-primary);">
+              {{ doc.chemin_fichier.split('\\')[-1] }}
+            </span>
           </div>
-          <small class="text-muted">Formats acceptés : PDF, PNG, JPG</small>
-        </form>
-
-        <!-- Liste des documents uploadés -->
-        {% if dossier.documents %}
-          {% for doc in dossier.documents %}
-            {% set ocr = doc.ocr_data | tojson | safe %}
-            {% set data = doc.ocr_data %}
-            <div class="card border mb-3">
-              <div class="card-body p-3">
-                <p class="fw-bold mb-2">
-                  📄 {{ doc.chemin_fichier.split('\\')[-1] }}
-                </p>
-                {% if doc.ocr_data %}
-                  {% set champs = doc.ocr_data | fromjson %}
-                  <table class="table table-sm table-borderless mb-0">
-                    <tr>
-                      <td class="text-muted" style="width:140px;">Montant détecté</td>
-                      <td class="fw-bold">
-                        {{ champs.montant if champs.montant else '—' }}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td class="text-muted">Date détectée</td>
-                      <td>{{ champs.date if champs.date else '—' }}</td>
-                    </tr>
-                    <tr>
-                      <td class="text-muted">Bénéficiaire</td>
-                      <td>{{ champs.beneficiaire if champs.beneficiaire else '—' }}</td>
-                    </tr>
-                  </table>
-                {% endif %}
+          {% if doc.ocr_data %}
+            {% set champs = doc.ocr_data | fromjson %}
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+              <div style="background:var(--bg-card); border-radius:8px; padding:10px;">
+                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Montant</div>
+                <div style="font-size:14px; font-weight:600; color:var(--text-primary);">
+                  {{ champs.montant if champs.montant else '—' }}
+                </div>
+              </div>
+              <div style="background:var(--bg-card); border-radius:8px; padding:10px;">
+                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Date</div>
+                <div style="font-size:14px; font-weight:600; color:var(--text-primary);">
+                  {{ champs.date if champs.date else '—' }}
+                </div>
+              </div>
+              <div style="background:var(--bg-card); border-radius:8px; padding:10px;">
+                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">Bénéficiaire</div>
+                <div style="font-size:14px; font-weight:600; color:var(--text-primary);">
+                  {{ champs.beneficiaire if champs.beneficiaire else '—' }}
+                </div>
               </div>
             </div>
-          {% endfor %}
-        {% else %}
-          <p class="text-muted">Aucun document importé.</p>
-        {% endif %}
-      </div>
-    </div>
-
-  <!-- Actions -->
-  <div class="col-md-4">
-
-
-    <!-- Analyse des règles métiers -->
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-body p-4">
-        <h6 class="fw-bold mb-3" style="color:#1F4E79;">🔍 Analyse métier</h6>
-        <form method="POST" action="{{ url_for('dossiers.analyser', id=dossier.id) }}">
-          <button type="submit" class="btn text-white w-100"
-                  style="background-color:#1F4E79;">
-            Lancer l'analyse
-          </button>
-        </form>
-
-        {% if dossier.resultats %}
-          {% set dernier = dossier.resultats[-1] %}
-          {% if dernier.regles_violees %}
-            {% set res = dernier.regles_violees | fromjson %}
-            <hr>
-            {% if res.regles_violees %}
-              <p class="text-danger fw-bold mb-2">
-                ⚠️ {{ res.nb_violations }} règle(s) violée(s)
-              </p>
-              {% for code, msg in res.details.items() %}
-                <div class="alert alert-danger p-2 mb-2" style="font-size:0.85rem;">
-                  <strong>{{ code }}</strong> — {{ msg }}
-                </div>
-              {% endfor %}
-            {% else %}
-              <p class="text-success fw-bold mt-3">✅ Aucune anomalie détectée</p>
-            {% endif %}
           {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center; padding:30px 0; color:var(--text-muted);">
+          <i class="bi bi-file-earmark-x" style="font-size:36px; display:block; margin-bottom:10px;"></i>
+          <p style="font-size:13px;">Aucun document importé.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Résultats d'analyse -->
+    {% if dossier.resultats %}
+    <div class="card-dark">
+      <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:16px;">
+        <i class="bi bi-shield-check me-2" style="color:var(--accent);"></i>Résultats d'analyse
+      </h3>
+      {% set dernier = dossier.resultats[-1] %}
+      {% if dernier.regles_violees %}
+        {% set res = dernier.regles_violees | fromjson %}
+        {% if res.regles_violees %}
+          <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:16px; margin-bottom:16px;">
+            <p style="font-size:14px; font-weight:600; color:var(--danger); margin-bottom:12px;">
+              <i class="bi bi-exclamation-triangle me-2"></i>{{ res.nb_violations }} règle(s) violée(s)
+            </p>
+            {% for code, msg in res.details.items() %}
+            <div style="background:rgba(239,68,68,0.06); border-left:3px solid var(--danger); border-radius:0 6px 6px 0; padding:10px 14px; margin-bottom:8px;">
+              <span style="font-size:12px; font-weight:700; color:var(--danger);">{{ code }}</span>
+              <p style="font-size:13px; color:var(--text-secondary); margin:4px 0 0;">{{ msg }}</p>
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.2); border-radius:10px; padding:16px;">
+            <p style="font-size:14px; font-weight:600; color:var(--success);">
+              <i class="bi bi-check-circle me-2"></i>Aucune anomalie détectée — Dossier conforme
+            </p>
+          </div>
         {% endif %}
-      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- ── Colonne droite ── -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Lancer l'analyse -->
+    <div class="card-dark">
+      <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:16px;">
+        <i class="bi bi-cpu me-2" style="color:var(--accent);"></i>Analyse IA
+      </h3>
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
+        Lance le moteur de règles métiers et le scoring Isolation Forest sur ce dossier.
+      </p>
+      <form method="POST" action="{{ url_for('dossiers.analyser', id=dossier.id) }}" data-spinner>
+        <button type="submit" class="btn-primary-dark" style="width:100%; justify-content:center;">
+          <i class="bi bi-play-fill"></i> Lancer l'analyse
+        </button>
+      </form>
     </div>
 
-    <!-- Mise à jour statut -->
-    <div class="card shadow-sm border-0 mb-4">
-      <div class="card-body p-4">
-        <h6 class="fw-bold mb-3" style="color:#1F4E79;">🔄 Changer le statut</h6>
-        <form method="POST" action="{{ url_for('dossiers.update_statut', id=dossier.id) }}">
-          <select name="statut" class="form-select mb-3">
-            <option value="EN_ATTENTE"  {{ 'selected' if dossier.statut == 'EN_ATTENTE' }}>En attente</option>
-            <option value="VALIDE"      {{ 'selected' if dossier.statut == 'VALIDE' }}>Validé</option>
-            <option value="ANOMALIE"    {{ 'selected' if dossier.statut == 'ANOMALIE' }}>Anomalie</option>
-            <option value="REJETE"      {{ 'selected' if dossier.statut == 'REJETE' }}>Rejeté</option>
-          </select>
-          <button type="submit" class="btn text-white w-100"
-                  style="background-color:#2E75B6;">Mettre à jour</button>
-        </form>
-      </div>
-    </div>
-
-    <!-- Suppression -->
-    <div class="card shadow-sm border-0 border-danger">
-      <div class="card-body p-4">
-        <h6 class="fw-bold mb-3 text-danger">🗑️ Supprimer le dossier</h6>
-        <form method="POST" action="{{ url_for('dossiers.supprimer', id=dossier.id) }}"
-              onsubmit="return confirm('Confirmer la suppression ?')">
-          <button type="submit" class="btn btn-outline-danger w-100">
-            Supprimer
-          </button>
-        </form>
-      </div>
+    <!-- Changer le statut -->
+    <div class="card-dark">
+      <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:16px;">
+        <i class="bi bi-arrow-repeat me-2" style="color:var(--accent);"></i>Statut
+      </h3>
+      <form method="POST" action="{{ url_for('dossiers.update_statut', id=dossier.id) }}">
+        <select name="statut" class="form-select-dark" style="margin-bottom:12px;">
+          <option value="EN_ATTENTE" {{ 'selected' if dossier.statut == 'EN_ATTENTE' }}>En attente</option>
+          <option value="VALIDE"     {{ 'selected' if dossier.statut == 'VALIDE' }}>Validé</option>
+          <option value="ANOMALIE"   {{ 'selected' if dossier.statut == 'ANOMALIE' }}>Anomalie</option>
+          <option value="REJETE"     {{ 'selected' if dossier.statut == 'REJETE' }}>Rejeté</option>
+        </select>
+        <button type="submit" class="btn-outline-dark" style="width:100%; justify-content:center;">
+          <i class="bi bi-check-lg"></i> Mettre à jour
+        </button>
+      </form>
     </div>
 
     <!-- Retour -->
-    <a href="{{ url_for('dossiers.index') }}"
-       class="btn btn-outline-secondary w-100 mt-3">← Retour au dashboard</a>
-  </div>
+    <a href="{{ url_for('dossiers.liste') }}" class="btn-outline-dark" style="justify-content:center;">
+      <i class="bi bi-arrow-left"></i> Retour aux dossiers
+    </a>
 
+    <!-- Supprimer -->
+    <div class="card-dark" style="border-color:rgba(239,68,68,0.2);">
+      <h3 style="font-size:15px; font-weight:600; color:var(--danger); margin-bottom:12px;">
+        <i class="bi bi-trash me-2"></i>Zone de danger
+      </h3>
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">
+        Cette action est irréversible. Tous les documents et analyses associés seront supprimés.
+      </p>
+      <form method="POST" action="{{ url_for('dossiers.supprimer', id=dossier.id) }}"
+            onsubmit="return confirm('Confirmer la suppression du dossier {{ dossier.reference }} ?')">
+        <button type="submit" class="btn-danger-dark" style="width:100%; justify-content:center;">
+          <i class="bi bi-trash"></i> Supprimer le dossier
+        </button>
+      </form>
+    </div>
+
+  </div>
 </div>
+
 {% endblock %}

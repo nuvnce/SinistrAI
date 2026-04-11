@@ -1,6 +1,15 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="dark">
+<html lang="fr">
 <head>
+  <script>
+    // Appliqué en premier pour éviter le flash de thème
+    try {
+      document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+    } catch(e) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  </script>
+  <meta charset="UTF-8"/>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SinistrAI — {% block title %}{% endblock %}</title>
@@ -499,11 +508,15 @@
     }
   }
 
-  // Appliquer le thème sauvegardé
-  try {
-    applyTheme(localStorage.getItem('theme') || 'dark');
-  } catch(e) {
-    applyTheme('dark');
+  // Synchroniser l'icône avec le thème déjà appliqué
+  applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
+
+  // Bouton toggle thème — c'était la ligne manquante !
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      applyTheme(next);
+    });
   }
 
   // ── Sidebar toggle ─────────────────────────────────────────────────────────
@@ -512,14 +525,16 @@
   const toggleBtn   = document.getElementById('sidebarToggle');
 
   if (toggleBtn) {
-    if (localStorage.getItem('sidebarMini') === 'true') {
-      sidebar.classList.add('mini');
-      mainWrapper.classList.add('mini');
-    }
+    try {
+      if (localStorage.getItem('sidebarMini') === 'true') {
+        sidebar.classList.add('mini');
+        mainWrapper.classList.add('mini');
+      }
+    } catch(e) {}
     toggleBtn.addEventListener('click', () => {
       sidebar.classList.toggle('mini');
       mainWrapper.classList.toggle('mini');
-      localStorage.setItem('sidebarMini', sidebar.classList.contains('mini'));
+      try { localStorage.setItem('sidebarMini', sidebar.classList.contains('mini')); } catch(e) {}
     });
   }
 
@@ -539,7 +554,6 @@
     });
   });
 </script>
-
 {% block extra_js %}{% endblock %}
 </body>
 </html>
