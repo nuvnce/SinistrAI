@@ -1,42 +1,545 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SinistrAI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f0f4f8; }
-        .navbar { background-color: #1F4E79; }
-        .navbar-brand, .nav-link { color: white !important; }
-    </style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SinistrAI — {% block title %}{% endblock %}</title>
+
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.png') }}" type="image/png"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* ── Thème sombre ── */
+    [data-theme="dark"] {
+      --bg-main:        #0A0F1E;
+      --bg-card:        #111827;
+      --bg-card2:       #1A2235;
+      --bg-input:       #0A0F1E;
+      --border:         rgba(255,255,255,0.07);
+      --text-primary:   #F1F5F9;
+      --text-secondary: #94A3B8;
+      --text-muted:     #64748B;
+      --shadow:         rgba(0,0,0,0.4);
+      --hover-bg:       rgba(255,255,255,0.05);
+      --sidebar-bg:     #111827;
+      --topbar-bg:      #111827;
+    }
+
+    /* ── Thème clair ── */
+    [data-theme="light"] {
+      --bg-main:        #F0F4F8;
+      --bg-card:        #FFFFFF;
+      --bg-card2:       #F8FAFC;
+      --bg-input:       #F8FAFC;
+      --border:         rgba(0,0,0,0.08);
+      --text-primary:   #0F172A;
+      --text-secondary: #475569;
+      --text-muted:     #94A3B8;
+      --shadow:         rgba(0,0,0,0.08);
+      --hover-bg:       rgba(0,0,0,0.03);
+      --sidebar-bg:     #1F4E79;
+      --topbar-bg:      #FFFFFF;
+    }
+
+    /* ── Variables communes ── */
+    :root {
+      --sidebar-w:      260px;
+      --sidebar-w-mini: 72px;
+      --accent:         #2563EB;
+      --accent-light:   #3B82F6;
+      --accent-glow:    rgba(37,99,235,0.25);
+      --success:        #10B981;
+      --warning:        #F59E0B;
+      --danger:         #EF4444;
+      --transition:     0.25s ease;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background var(--transition), color var(--transition);
+    }
+    body.no-sidebar { display: block; }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: var(--sidebar-w);
+      min-height: 100vh;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0;
+      z-index: 100;
+      transition: width var(--transition), background var(--transition);
+      overflow: hidden;
+    }
+    #sidebar.mini { width: var(--sidebar-w-mini); }
+
+    .sidebar-logo {
+      display: flex; align-items: center; gap: 12px;
+      padding: 24px 20px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap; text-decoration: none;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), #1D4ED8);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+    .logo-text {
+      font-size: 20px; font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: -0.3px;
+    }
+    .logo-sub {
+      font-size: 10px; color: rgba(255,255,255,0.5);
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+
+    .sidebar-nav { padding: 16px 0; flex: 1; }
+
+    .nav-section-title {
+      font-size: 10px; font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 8px 20px; margin-top: 8px;
+      white-space: nowrap; overflow: hidden;
+    }
+
+    .sidebar-link {
+      display: flex; align-items: center; gap: 14px;
+      padding: 11px 20px;
+      color: rgba(255,255,255,0.55);
+      text-decoration: none;
+      transition: all var(--transition);
+      white-space: nowrap;
+      position: relative;
+      font-size: 14px; font-weight: 500;
+    }
+    .sidebar-link i { font-size: 18px; flex-shrink: 0; width: 20px; text-align: center; }
+    .sidebar-link:hover { color: #FFFFFF; background: rgba(255,255,255,0.08); }
+    .sidebar-link.active { color: #FFFFFF; background: rgba(37,99,235,0.35); }
+    .sidebar-link.active::before {
+      content: '';
+      position: absolute; left: 0; top: 4px; bottom: 4px;
+      width: 3px; background: var(--accent-light);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .sidebar-toggle {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      cursor: pointer;
+      display: flex; align-items: center; gap: 14px;
+      color: rgba(255,255,255,0.4);
+      font-size: 14px;
+      transition: color var(--transition);
+      white-space: nowrap;
+    }
+    .sidebar-toggle:hover { color: #FFFFFF; }
+    .sidebar-toggle i { font-size: 18px; flex-shrink: 0; width: 20px; text-align: center; }
+
+    #sidebar.mini .logo-text,
+    #sidebar.mini .logo-sub,
+    #sidebar.mini .nav-section-title,
+    #sidebar.mini .link-text,
+    #sidebar.mini .toggle-text { display: none; }
+    #sidebar.mini .sidebar-logo   { justify-content: center; padding: 24px 0; }
+    #sidebar.mini .sidebar-link   { justify-content: center; padding: 11px 0; }
+    #sidebar.mini .sidebar-toggle { justify-content: center; }
+
+    /* ── Main wrapper ── */
+    #main-wrapper {
+      margin-left: var(--sidebar-w);
+      flex: 1; display: flex; flex-direction: column;
+      transition: margin-left var(--transition);
+      min-height: 100vh;
+    }
+    #main-wrapper.mini { margin-left: var(--sidebar-w-mini); }
+
+    /* ── Topbar ── */
+    #topbar {
+      height: 64px;
+      background: var(--topbar-bg);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      padding: 0 28px;
+      position: sticky; top: 0; z-index: 99;
+      gap: 16px;
+      transition: background var(--transition);
+    }
+    .topbar-title { font-size: 16px; font-weight: 600; color: var(--text-primary); flex: 1; }
+    .topbar-user  { display: flex; align-items: center; gap: 10px; }
+
+    .user-avatar {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), #1D4ED8);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600; color: white; flex-shrink: 0;
+    }
+    .user-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .user-role { font-size: 11px; color: var(--text-secondary); }
+
+    .btn-logout {
+      background: rgba(239,68,68,0.12); color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px; padding: 6px 14px;
+      font-size: 13px; font-weight: 500;
+      text-decoration: none;
+      transition: all var(--transition);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-logout:hover { background: rgba(239,68,68,0.22); color: var(--danger); }
+
+    /* Toggle thème */
+    .theme-toggle {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--hover-bg);
+      border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 16px;
+      transition: all var(--transition);
+      color: var(--text-secondary);
+    }
+    .theme-toggle:hover { color: var(--text-primary); border-color: var(--accent); }
+
+    /* ── Page content ── */
+    #page-content { padding: 28px; flex: 1; }
+
+    /* ── Cards ── */
+    .card-dark {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px;
+      transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+    }
+    .card-dark:hover {
+      border-color: rgba(37,99,235,0.3);
+      box-shadow: 0 4px 24px var(--shadow);
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 20px 24px;
+      display: flex; align-items: center; gap: 16px;
+      transition: all var(--transition);
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--shadow);
+      border-color: rgba(37,99,235,0.25);
+    }
+    .stat-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .stat-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+    .stat-value { font-size: 28px; font-weight: 700; line-height: 1.1; color: var(--text-primary); }
+
+    /* ── Buttons ── */
+    .btn-primary-dark {
+      background: linear-gradient(135deg, var(--accent), #1D4ED8);
+      color: white; border: none; border-radius: 8px; padding: 10px 20px;
+      font-size: 14px; font-weight: 500; text-decoration: none; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: all var(--transition);
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .btn-primary-dark:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); color: white; }
+
+    .btn-outline-dark {
+      background: transparent; color: var(--text-secondary);
+      border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px;
+      font-size: 13px; font-weight: 500; text-decoration: none; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: all var(--transition);
+    }
+    .btn-outline-dark:hover { color: var(--text-primary); border-color: rgba(37,99,235,0.4); background: var(--hover-bg); }
+
+    .btn-danger-dark {
+      background: rgba(239,68,68,0.12); color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.2); border-radius: 8px; padding: 8px 16px;
+      font-size: 13px; font-weight: 500; text-decoration: none; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: all var(--transition);
+    }
+    .btn-danger-dark:hover { background: rgba(239,68,68,0.22); }
+
+    /* ── Tables ── */
+    .table-dark-custom { width: 100%; border-collapse: collapse; }
+    .table-dark-custom th {
+      padding: 12px 16px; font-size: 11px; font-weight: 600;
+      color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+    .table-dark-custom td {
+      padding: 14px 16px; font-size: 14px; color: var(--text-primary);
+      border-bottom: 1px solid var(--border); vertical-align: middle;
+    }
+    .table-dark-custom tr:hover td { background: var(--hover-bg); }
+    .table-dark-custom tr:last-child td { border-bottom: none; }
+
+    /* ── Badges ── */
+    .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .badge-valide   { background: rgba(16,185,129,0.15); color: var(--success); }
+    .badge-anomalie { background: rgba(239,68,68,0.15);  color: var(--danger); }
+    .badge-attente  { background: rgba(245,158,11,0.15); color: var(--warning); }
+    .badge-rejete   { background: rgba(148,163,184,0.15); color: var(--text-secondary); }
+
+    /* ── Flash messages ── */
+    .flash-container {
+      position: fixed; top: 80px; right: 24px;
+      z-index: 9999; display: flex; flex-direction: column; gap: 10px;
+      max-width: 360px;
+    }
+    .flash-msg {
+      background: var(--bg-card2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 18px;
+      display: flex; align-items: flex-start; gap: 12px;
+      box-shadow: 0 8px 32px var(--shadow);
+      animation: slideIn 0.3s ease;
+    }
+    .flash-msg.success { border-left: 3px solid var(--success); }
+    .flash-msg.danger  { border-left: 3px solid var(--danger); }
+    .flash-msg.warning { border-left: 3px solid var(--warning); }
+    .flash-msg.info    { border-left: 3px solid var(--accent); }
+    .flash-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .flash-text { font-size: 13px; color: var(--text-primary); flex: 1; }
+    .flash-close { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 16px; padding: 0; line-height: 1; }
+
+    @keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+
+    /* ── Forms ── */
+    .form-control-dark, .form-select-dark {
+      background: var(--bg-input); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text-primary);
+      padding: 10px 14px; font-size: 14px; width: 100%;
+      transition: border-color var(--transition);
+      font-family: 'Inter', sans-serif;
+    }
+    .form-control-dark:focus, .form-select-dark:focus {
+      outline: none; border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+      background: var(--bg-input); color: var(--text-primary);
+    }
+    .form-select-dark option { background: var(--bg-card); }
+    .form-label-dark { font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; display: block; }
+
+    /* ── Spinner ── */
+    #spinner-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(10,15,30,0.85); z-index: 9998;
+      flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+    }
+    #spinner-overlay.active { display: flex; }
+    .spinner-ring {
+      width: 64px; height: 64px;
+      border: 4px solid var(--border); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    .spinner-text { color: var(--text-secondary); font-size: 14px; font-weight: 500; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-main); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,0.3); }
+
+    /* ── Section titles ── */
+    .section-title {
+      font-size: 18px; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 4px;
+    }
+    .section-subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; }
+  </style>
+
+  {% block extra_css %}{% endblock %}
 </head>
-<body>
-    {% if current_user.is_authenticated %}
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">🛡️ SinistrAI</a>
-            <div class="ms-auto">
-                <span class="text-white me-3">{{ current_user.nom }}</span>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm">Déconnexion</a>
-            </div>
-        </div>
-    </nav>
-    {% endif %}
 
-    <div class="container mt-4">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-            {% endfor %}
-        {% endwith %}
+<body class="{% if not current_user.is_authenticated %}no-sidebar{% endif %}">
 
-        {% block content %}{% endblock %}
+{% if current_user.is_authenticated %}
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <a class="sidebar-logo" href="{{ url_for('dossiers.index') }}">
+      <div class="logo-icon">🛡️</div>
+      <div>
+        <div class="logo-text">SinistrAI</div>
+        <div class="logo-sub">Gestion sinistres</div>
+      </div>
+    </a>
+
+    <div class="sidebar-nav">
+      <div class="nav-section-title">Principal</div>
+      <a href="{{ url_for('dossiers.index') }}"
+         class="sidebar-link {% if request.endpoint == 'dossiers.index' %}active{% endif %}">
+        <i class="bi bi-speedometer2"></i>
+        <span class="link-text">Dashboard</span>
+      </a>
+      <a href="{{ url_for('dossiers.liste') }}"
+         class="sidebar-link {% if request.endpoint in ['dossiers.liste','dossiers.nouveau','dossiers.detail'] %}active{% endif %}">
+        <i class="bi bi-folder2-open"></i>
+        <span class="link-text">Dossiers</span>
+      </a>
+      <a href="{{ url_for('dossiers.analytics') }}"
+         class="sidebar-link {% if request.endpoint == 'dossiers.analytics' %}active{% endif %}">
+        <i class="bi bi-bar-chart-line"></i>
+        <span class="link-text">Analytics</span>
+      </a>
+
+      {% if current_user.role == 'admin' %}
+      <div class="nav-section-title">Administration</div>
+      <a href="{{ url_for('admin.utilisateurs') }}"
+         class="sidebar-link {% if 'admin' in request.endpoint %}active{% endif %}">
+        <i class="bi bi-people"></i>
+        <span class="link-text">Utilisateurs</span>
+      </a>
+      {% endif %}
+
+      <div class="nav-section-title">Système</div>
+      <a href="{{ url_for('dossiers.apropos') }}"
+         class="sidebar-link {% if request.endpoint == 'dossiers.apropos' %}active{% endif %}">
+        <i class="bi bi-info-circle"></i>
+        <span class="link-text">À propos</span>
+      </a>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <div class="sidebar-toggle" id="sidebarToggle">
+      <i class="bi bi-layout-sidebar-reverse"></i>
+      <span class="toggle-text">Réduire</span>
+    </div>
+  </nav>
+
+  <!-- MAIN WRAPPER -->
+  <div id="main-wrapper">
+
+    <!-- Topbar -->
+    <div id="topbar">
+      <div class="topbar-title">{% block page_title %}SinistrAI{% endblock %}</div>
+      <div class="topbar-user">
+        <!-- Toggle thème -->
+        <div class="theme-toggle" id="themeToggle" title="Changer le thème">
+          <i class="bi bi-sun-fill" id="themeIcon"></i>
+        </div>
+        <div class="user-avatar">{{ current_user.nom[0].upper() }}</div>
+        <div>
+          <div class="user-name">{{ current_user.nom }}</div>
+          <div class="user-role">{{ current_user.role | capitalize }}</div>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="btn-logout ms-2">
+          <i class="bi bi-box-arrow-right"></i>
+          <span>Déconnexion</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Flash messages -->
+    <div class="flash-container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          {% if category == 'success' %}{% set icon = 'bi-check-circle-fill' %}{% set color = '#10B981' %}
+          {% elif category == 'danger' %}{% set icon = 'bi-x-circle-fill' %}{% set color = '#EF4444' %}
+          {% elif category == 'warning' %}{% set icon = 'bi-exclamation-triangle-fill' %}{% set color = '#F59E0B' %}
+          {% else %}{% set icon = 'bi-info-circle-fill' %}{% set color = '#2563EB' %}{% endif %}
+          <div class="flash-msg {{ category }}" data-auto-close="5000">
+            <i class="bi {{ icon }} flash-icon" style="color:{{ color }}"></i>
+            <span class="flash-text">{{ message }}</span>
+            <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+          </div>
+        {% endfor %}
+      {% endwith %}
+    </div>
+
+    <!-- Spinner -->
+    <div id="spinner-overlay">
+      <div class="spinner-ring"></div>
+      <div class="spinner-text">Analyse en cours, veuillez patienter...</div>
+    </div>
+
+    <!-- Contenu -->
+    <div id="page-content">
+      {% block content %}{% endblock %}
+    </div>
+
+  </div><!-- /main-wrapper -->
+
+{% else %}
+  {% block login_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // ── Thème ──────────────────────────────────────────────────────────────────
+  const html      = document.documentElement;
+  const themeIcon = document.getElementById('themeIcon');
+  const themeBtn  = document.getElementById('themeToggle');
+
+  function applyTheme(theme) {
+    html.setAttribute('data-theme', theme);
+    try { localStorage.setItem('theme', theme); } catch(e) {}
+    if (themeIcon) {
+      themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    }
+  }
+
+  // Appliquer le thème sauvegardé
+  try {
+    applyTheme(localStorage.getItem('theme') || 'dark');
+  } catch(e) {
+    applyTheme('dark');
+  }
+
+  // ── Sidebar toggle ─────────────────────────────────────────────────────────
+  const sidebar     = document.getElementById('sidebar');
+  const mainWrapper = document.getElementById('main-wrapper');
+  const toggleBtn   = document.getElementById('sidebarToggle');
+
+  if (toggleBtn) {
+    if (localStorage.getItem('sidebarMini') === 'true') {
+      sidebar.classList.add('mini');
+      mainWrapper.classList.add('mini');
+    }
+    toggleBtn.addEventListener('click', () => {
+      sidebar.classList.toggle('mini');
+      mainWrapper.classList.toggle('mini');
+      localStorage.setItem('sidebarMini', sidebar.classList.contains('mini'));
+    });
+  }
+
+  // ── Flash auto-close ───────────────────────────────────────────────────────
+  document.querySelectorAll('.flash-msg[data-auto-close]').forEach(msg => {
+    const delay = parseInt(msg.dataset.autoClose) || 5000;
+    setTimeout(() => {
+      msg.style.animation = 'slideOut 0.3s ease forwards';
+      setTimeout(() => msg.remove(), 300);
+    }, delay);
+  });
+
+  // ── Spinner ────────────────────────────────────────────────────────────────
+  document.querySelectorAll('form[data-spinner]').forEach(form => {
+    form.addEventListener('submit', () => {
+      document.getElementById('spinner-overlay').classList.add('active');
+    });
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
 </body>
 </html>

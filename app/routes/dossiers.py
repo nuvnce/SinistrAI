@@ -245,3 +245,88 @@ def analyser(id):
         flash('✅ Dossier conforme — aucune anomalie détectée.', 'success')
 
     return redirect(url_for('dossiers.detail', id=id))
+
+@bp.route('/dossiers')
+@login_required
+def liste():
+    dossiers = Dossier.query.filter_by(created_by=current_user.id)\
+                            .order_by(Dossier.date_creation.desc()).all()
+    stats = {
+        'total':      Dossier.query.filter_by(created_by=current_user.id).count(),
+        'en_attente': Dossier.query.filter_by(created_by=current_user.id, statut='EN_ATTENTE').count(),
+        'valide':     Dossier.query.filter_by(created_by=current_user.id, statut='VALIDE').count(),
+        'anomalie':   Dossier.query.filter_by(created_by=current_user.id, statut='ANOMALIE').count(),
+    }
+    return render_template('dossiers/liste.html', dossiers=dossiers, stats=stats)
+
+
+@bp.route('/analytics')
+@login_required
+def analytics():
+    from sqlalchemy import func, extract
+    total      = Dossier.query.filter_by(created_by=current_user.id).count()
+    en_attente = Dossier.query.filter_by(created_by=current_user.id, statut='EN_ATTENTE').count()
+    valide     = Dossier.query.filter_by(created_by=current_user.id, statut='VALIDE').count()
+    anomalie   = Dossier.query.filter_by(created_by=current_user.id, statut='ANOMALIE').count()
+    rejete     = Dossier.query.filter_by(created_by=current_user.id, statut='REJETE').count()
+
+    stats = {
+        'total': total, 'en_attente': en_attente,
+        'valide': valide, 'anomalie': anomalie, 'rejete': rejete,
+        'taux_anomalie': round(anomalie / total * 100, 1) if total > 0 else 0,
+    }
+
+    evolution = db.session.query(
+        extract('month', Dossier.date_creation).label('mois'),
+        func.count(Dossier.id).label('nb')
+    ).filter_by(created_by=current_user.id)\
+     .group_by('mois').order_by('mois').all()
+
+    mois_labels    = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc']
+    evolution_data = [0] * 12
+    for row in evolution:
+        evolution_data[int(row.mois) - 1] = row.nb
+
+    derniers = Dossier.query.filter(
+        Dossier.created_by == current_user.id,
+        Dossier.score_anomalie != None
+    ).order_by(Dossier.date_creation.desc()).limit(10).all()
+
+    scores_labels = [d.reference for d in reversed(derniers)]
+    scores_data   = [round(d.score_anomalie, 2) for d in reversed(derniers)]
+
+    tous_docs = Document.query.join(Dossier)\
+                .filter(Dossier.created_by == current_user.id).all()
+    nb_docs       = len(tous_docs)
+    nb_montant_ok = nb_date_ok = nb_benef_ok = 0
+    for doc in tous_docs:
+        if doc.ocr_data:
+            try:
+                data = json.loads(doc.ocr_data)
+                if data.get("montant"):      nb_montant_ok += 1
+                if data.get("date"):         nb_date_ok    += 1
+                if data.get("beneficiaire"): nb_benef_ok   += 1
+            except Exception:
+                pass
+
+    perf_ocr = {
+        'nb_docs':      nb_docs,
+        'montant':      round(nb_montant_ok / nb_docs * 100, 1) if nb_docs > 0 else 0,
+        'date':         round(nb_date_ok    / nb_docs * 100, 1) if nb_docs > 0 else 0,
+        'beneficiaire': round(nb_benef_ok   / nb_docs * 100, 1) if nb_docs > 0 else 0,
+    }
+
+    return render_template('analytics.html',
+        stats=stats,
+        evolution_labels=mois_labels,
+        evolution_data=evolution_data,
+        scores_labels=scores_labels,
+        scores_data=scores_data,
+        perf_ocr=perf_ocr,
+    )
+
+
+@bp.route('/apropos')
+@login_required
+def apropos():
+    return render_template('apropos.html')

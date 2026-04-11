@@ -14,9 +14,10 @@ def create_app():
     db.init_app(app)
     login_manager.init_app(app)
 
-    from app.routes import auth, dossiers
+    from app.routes import auth, dossiers, admin
     app.register_blueprint(auth.bp)
     app.register_blueprint(dossiers.bp)
+    app.register_blueprint(admin.bp)
 
     import json
     app.jinja_env.filters['fromjson'] = json.loads
