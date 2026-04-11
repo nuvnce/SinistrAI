@@ -1,5 +1,174 @@
 {% extends 'base.html' %}
+{% block title %}À propos{% endblock %}
 {% block page_title %}À propos{% endblock %}
+
 {% block content %}
-<p class="text-secondary">Page en construction</p>
+
+<!-- En-tête -->
+<div style="margin-bottom:28px;">
+  <h2 class="section-title">À propos de SinistrAI</h2>
+  <p class="section-subtitle">Documentation technique, technologies utilisées et guide d'utilisation.</p>
+</div>
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+
+  <!-- Présentation -->
+  <div class="card-dark" style="grid-column:1/-1;">
+    <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border);">
+      <div style="width:56px; height:56px; background:linear-gradient(135deg,#2563EB,#1D4ED8); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:26px; box-shadow:0 0 24px rgba(37,99,235,0.4);">🛡️</div>
+      <div>
+        <h3 style="font-size:20px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">SinistrAI</h3>
+        <p style="font-size:13px; color:var(--text-secondary);">Plateforme intelligente de gestion et de détection de fraude dans les remboursements d'assurance santé</p>
+      </div>
+      <div style="margin-left:auto; text-align:right;">
+        <span style="font-size:11px; color:var(--text-muted); display:block;">Version</span>
+        <span style="font-size:16px; font-weight:700; color:var(--accent);">v1.0</span>
+      </div>
+    </div>
+    <p style="font-size:14px; color:var(--text-secondary); line-height:1.7;">
+      SinistrAI est un prototype de plateforme web développé dans le cadre d'un mémoire professionnel de Master en Big Data à l'UCAO-UUT. Il démontre la faisabilité technique d'un système combinant l'extraction automatique de données par OCR, la vérification par règles métiers et la détection d'anomalies par Machine Learning, appliqués au traitement de dossiers de remboursement en assurance santé.
+    </p>
+  </div>
+
+</div>
+
+<!-- Stack technique -->
+<div class="card-dark" style="margin-bottom:20px;">
+  <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:20px;">
+    <i class="bi bi-stack me-2" style="color:var(--accent);"></i>Stack technique
+  </h3>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:12px;">
+
+    {% set stack = [
+      ('bi-filetype-py', '#3B82F6', 'Back-end', 'Python / Flask', 'API REST et logique applicative'),
+      ('bi-database', '#10B981', 'Base de données', 'SQLite / SQLAlchemy', 'Persistance des dossiers et résultats'),
+      ('bi-file-code', '#F59E0B', 'Front-end', 'HTML / Bootstrap 5 / JS', 'Interface utilisateur responsive'),
+      ('bi-eye', '#8B5CF6', 'OCR', 'EasyOCR (Python)', 'Extraction automatique des documents'),
+      ('bi-cpu', '#EF4444', 'Machine Learning', 'scikit-learn', 'Isolation Forest — détection anomalies'),
+      ('bi-bar-chart', '#06B6D4', 'Visualisation', 'Chart.js', 'Tableaux de bord et graphiques'),
+      ('bi-shield-check', '#10B981', 'Sécurité', 'bcrypt / Flask-Login', 'Auth et hashage des mots de passe'),
+      ('bi-file-earmark-text', '#F59E0B', 'Données', 'Python / Faker', 'Génération de données synthétiques'),
+    ] %}
+
+    {% for icon, color, label, tech, desc in stack %}
+    <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; padding:14px; display:flex; gap:12px; align-items:flex-start;">
+      <div style="width:36px; height:36px; background:{{ color }}20; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <i class="bi {{ icon }}" style="color:{{ color }}; font-size:16px;"></i>
+      </div>
+      <div>
+        <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px;">{{ label }}</div>
+        <div style="font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:2px;">{{ tech }}</div>
+        <div style="font-size:12px; color:var(--text-secondary);">{{ desc }}</div>
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+
+<!-- Fonctionnement du système -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
+
+  <!-- Pipeline de traitement -->
+  <div class="card-dark">
+    <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:20px;">
+      <i class="bi bi-diagram-3 me-2" style="color:var(--accent);"></i>Pipeline de traitement
+    </h3>
+    {% set etapes = [
+      ('1', '#2563EB', 'bi-upload', 'Import du document', 'Upload d\'un fichier PDF ou image contenant les informations du sinistre.'),
+      ('2', '#8B5CF6', 'bi-eye', 'Extraction OCR', 'EasyOCR lit automatiquement le document et extrait le montant, la date et le bénéficiaire.'),
+      ('3', '#F59E0B', 'bi-list-check', 'Règles métiers', 'Le moteur vérifie 5 règles : plafond, cohérence dates, doublon, fréquence et acte couvert.'),
+      ('4', '#EF4444', 'bi-cpu', 'Score Isolation Forest', 'Le modèle ML calcule un score d\'anomalie entre 0 et 1 basé sur 9 features du dossier.'),
+      ('5', '#10B981', 'bi-check-circle', 'Résultat final', 'Le dossier est classé VALIDE ou ANOMALIE avec détail des violations détectées.'),
+    ] %}
+    {% for num, color, icon, titre, desc in etapes %}
+    <div style="display:flex; gap:12px; margin-bottom:16px;">
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <div style="width:32px; height:32px; background:{{ color }}20; border:2px solid {{ color }}; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:{{ color }}; flex-shrink:0;">{{ num }}</div>
+        {% if not loop.last %}<div style="width:2px; flex:1; background:var(--border); margin:4px 0;"></div>{% endif %}
+      </div>
+      <div style="padding-bottom:{% if not loop.last %}16px{% else %}0{% endif %};">
+        <div style="font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">
+          <i class="bi {{ icon }} me-1" style="color:{{ color }};"></i>{{ titre }}
+        </div>
+        <div style="font-size:12px; color:var(--text-secondary); line-height:1.5;">{{ desc }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Règles métiers -->
+  <div class="card-dark">
+    <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:20px;">
+      <i class="bi bi-list-check me-2" style="color:var(--accent);"></i>Règles métiers (R01–R05)
+    </h3>
+    {% set regles = [
+      ('R01', '#EF4444', 'Plafond de remboursement', 'Le montant réclamé dépasse le plafond autorisé pour l\'acte médical concerné.'),
+      ('R02', '#F59E0B', 'Cohérence temporelle', 'La date de soin est postérieure à la date de dépôt ou antérieure à la date d\'adhésion.'),
+      ('R03', '#8B5CF6', 'Doublon de dossier', 'Un dossier similaire (même assuré, même acte, même date) existe déjà en base.'),
+      ('R04', '#06B6D4', 'Fréquence anormale', 'L\'assuré a soumis plus de 5 dossiers dans une fenêtre glissante de 30 jours.'),
+      ('R05', '#F97316', 'Acte non couvert', 'Le code acte médical est absent du référentiel des actes pris en charge.'),
+    ] %}
+    {% for code, color, titre, desc in regles %}
+    <div style="background:var(--bg-card2); border:1px solid var(--border); border-left:3px solid {{ color }}; border-radius:0 8px 8px 0; padding:12px 14px; margin-bottom:10px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+        <span style="font-size:11px; font-weight:700; color:{{ color }}; background:{{ color }}20; padding:2px 8px; border-radius:20px;">{{ code }}</span>
+        <span style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ titre }}</span>
+      </div>
+      <p style="font-size:12px; color:var(--text-secondary); margin:0; line-height:1.5;">{{ desc }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- Guide d'utilisation -->
+<div class="card-dark" style="margin-bottom:20px;">
+  <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:20px;">
+    <i class="bi bi-book me-2" style="color:var(--accent);"></i>Guide d'utilisation
+  </h3>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+    {% set guide = [
+      ('bi-box-arrow-in-right', '#2563EB', 'Connexion', 'Utilisez vos identifiants pour accéder à la plateforme. Seul l\'administrateur peut créer de nouveaux comptes.'),
+      ('bi-plus-circle', '#10B981', 'Créer un dossier', 'Depuis la page Dossiers, cliquez sur "Nouveau dossier". Une référence unique SIN-AAAA-XXXXXX est générée automatiquement.'),
+      ('bi-upload', '#8B5CF6', 'Importer un document', 'Dans la fiche dossier, importez un PDF ou une image. L\'OCR extrait automatiquement le montant, la date et le bénéficiaire.'),
+      ('bi-play-circle', '#F59E0B', 'Lancer l\'analyse', 'Cliquez sur "Lancer l\'analyse" pour appliquer les règles métiers et calculer le score Isolation Forest.'),
+      ('bi-graph-up', '#EF4444', 'Interpréter le score IF', 'Score 0–0.4 : Normal (vert). Score 0.4–0.6 : Limite (orange). Score 0.6–1 : Suspect (rouge).'),
+      ('bi-bar-chart-line', '#06B6D4', 'Consulter l\'Analytics', 'La page Analytics affiche les graphiques de performance : répartition des statuts, évolution mensuelle et scores IF.'),
+    ] %}
+    {% for icon, color, titre, desc in guide %}
+    <div style="display:flex; gap:12px; background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; padding:14px;">
+      <div style="width:36px; height:36px; background:{{ color }}20; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <i class="bi {{ icon }}" style="color:{{ color }}; font-size:16px;"></i>
+      </div>
+      <div>
+        <div style="font-size:13px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">{{ titre }}</div>
+        <div style="font-size:12px; color:var(--text-secondary); line-height:1.5;">{{ desc }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Infos projet -->
+<div class="card-dark">
+  <h3 style="font-size:15px; font-weight:600; color:var(--text-primary); margin-bottom:16px;">
+    <i class="bi bi-mortarboard me-2" style="color:var(--accent);"></i>Informations académiques
+  </h3>
+  <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr)); gap:12px;">
+    {% set infos = [
+      ('Établissement', 'UCAO-UUT — Université Catholique de l\'Afrique de l\'Ouest'),
+      ('Programme', 'Master en Big Data — École Supérieure d\'Ingénieurs'),
+      ('Année', '2024 – 2025'),
+      ('Type de projet', 'Mémoire professionnel — Projet tutoré'),
+    ] %}
+    {% for label, valeur in infos %}
+    <div style="background:var(--bg-card2); border:1px solid var(--border); border-radius:10px; padding:14px;">
+      <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">{{ label }}</div>
+      <div style="font-size:13px; font-weight:500; color:var(--text-primary);">{{ valeur }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
 {% endblock %}
