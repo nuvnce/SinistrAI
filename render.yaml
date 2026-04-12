@@ -2,7 +2,6 @@ services:
   - type: web
     name: sinistrai
     env: python
-    runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn run:app
     envVars:
