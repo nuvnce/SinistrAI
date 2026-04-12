@@ -2,10 +2,11 @@ services:
   - type: web
     name: sinistrai
     env: python
+    runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn run:app
     envVars:
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: "3.11.0"
