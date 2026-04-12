@@ -25,3 +25,7 @@ app/static/uploads/
 # OS
 .DS_Store
 Thumbs.db
+
+# Ne pas ignorer les modèles ML
+!data/*.pkl
+!data/sinistres_synthetiques.csv
