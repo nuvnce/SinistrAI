@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from app import create_app, db
 from app.models import Utilisateur
 import bcrypt
@@ -19,4 +22,4 @@ with app.app_context():
         print("✅ Compte admin créé.")
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)

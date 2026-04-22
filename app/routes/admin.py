@@ -4,6 +4,8 @@ from app import db
 from app.models import Utilisateur
 from app.services.logger import log_action
 import bcrypt
+from app.services.mail_service import envoyer_email_bienvenue
+
 
 bp = Blueprint('admin', __name__)
 
@@ -53,6 +55,9 @@ def creer_utilisateur():
     user = Utilisateur(nom=nom, email=email, password_hash=password_hash, role=role)
     db.session.add(user)
     db.session.commit()
+
+    # Email de bienvenue
+    envoyer_email_bienvenue(user)
 
     log_action("CREATION_UTILISATEUR", f"Compte créé : {email} ({role})", user_id=current_user.id)
     flash(f'Compte de {nom} créé avec succès.', 'success')

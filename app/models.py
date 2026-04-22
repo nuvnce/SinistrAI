@@ -12,7 +12,7 @@ class Utilisateur(UserMixin, db.Model):
     id            = db.Column(db.Integer, primary_key=True)
     nom           = db.Column(db.String(100), nullable=False)
     email         = db.Column(db.String(120), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
+    password_hash = db.Column(db.LargeBinary, nullable=False)
     role          = db.Column(db.String(20), default='gestionnaire')
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
     dossiers      = db.relationship('Dossier', backref='createur', lazy=True)

@@ -12,6 +12,7 @@ import json
 import os
 from app.services.anomaly_detector import scorer_dossier
 from app.services.logger import log_action
+from app.services.mail_service import envoyer_alerte_anomalie
 
 bp = Blueprint('dossiers', __name__)
 
@@ -217,7 +218,7 @@ def analyser(id):
 
     # ── Score Isolation Forest ────────────────────────────────────────────────────
     scoring = scorer_dossier(ocr_data)
-    score_if = scoring["score"]
+    score_if = float(scoring["score"])
 
     analyse = ResultatAnalyse(
         dossier_id=dossier.id,
@@ -229,6 +230,15 @@ def analyser(id):
     dossier.score_anomalie = score_if
     dossier.date_mise_a_jour = datetime.utcnow()
     db.session.commit()
+
+    # Envoi email si anomalie détectée
+    if resultat["statut"] == "ANOMALIE":
+        envoyer_alerte_anomalie(
+            dossier=dossier,
+            resultat={**resultat, "score_if": score_if},
+            destinataire=current_user.email
+        )
+
     log_action(
         "ANALYSE_DOSSIER",
         f"Dossier {dossier.reference} analysé — statut={resultat['statut']} score={round(score_if, 2)}",

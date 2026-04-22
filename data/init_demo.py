@@ -155,7 +155,7 @@ def peupler_demo():
 
             # Mise à jour du dossier
             dossier.statut         = resultat["statut"]
-            dossier.score_anomalie = score_if
+            dossier.score_anomalie = float(score_if)
             dossier.date_mise_a_jour = datetime.utcnow()
 
             regles = resultat["regles_violees"]

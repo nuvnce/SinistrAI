@@ -16,7 +16,8 @@ def login():
         password = request.form.get('password')
         user     = Utilisateur.query.filter_by(email=email).first()
 
-        if user and bcrypt.checkpw(password.encode('utf-8'), user.password_hash):
+        hash_bytes = user.password_hash if isinstance(user.password_hash, bytes) else user.password_hash.encode('utf-8')
+        if user and bcrypt.checkpw(password.encode('utf-8'), hash_bytes):
             login_user(user)
             log_action("CONNEXION", "Connexion réussie", user_id=user.id)
             return redirect(url_for('auth.splash'))
