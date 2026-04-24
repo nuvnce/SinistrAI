@@ -147,6 +147,13 @@ python data/init_demo.py
 ### Prérequis
 - Docker Desktop installé et lancé
 
+### Clonez le projet
+
+```bash
+git clone https://github.com/nuvnce/SinistrAI
+cd SinistrAI
+```
+
 ### Démarrage en une commande
 
 ```bash
