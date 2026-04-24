@@ -142,6 +142,35 @@ python data/init_demo.py
 ```
 
 ---
+## 🐳 Lancement avec Docker
+
+### Prérequis
+- Docker Desktop installé et lancé
+
+### Démarrage en une commande
+
+```bash
+docker-compose up --build
+```
+
+L'application sera accessible sur `http://localhost:5000`
+
+Identifiants admin :
+- Email : `admin@sinistrai.com`
+- Mot de passe : `admin123`
+
+### Arrêter l'application
+
+```bash
+docker-compose down
+```
+
+### Arrêter et supprimer les données
+
+```bash
+docker-compose down -v
+```
+---
 
 ## 🚀 Fonctionnalités
 

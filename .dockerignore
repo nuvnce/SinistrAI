@@ -1,0 +1,13 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+*.pyo
+instance/
+app/static/uploads/
+.git/
+.gitignore
+*.md
+assets/
+poppler-25.12.0/
+data/documents_test/
